@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Cricket Turf Booking</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="logo">🏏 Admin Panel</div>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="#" onclick="showSection('dashboard')">Dashboard</a></li>
+                    <li><a href="#" onclick="showSection('bookings')">All Bookings</a></li>
+                    <li><a href="#" onclick="showSection('upcoming')">Today & Tomorrow</a></li>
+                    <li><a href="#" onclick="showSection('users')">Users</a></li>
+                    <li><a href="#" onclick="logout()">Logout</a></li>
+                    <li><a href="/">Main Site</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <!-- Login Section -->
+            <section id="login-section" class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Admin Login</h2>
+                </div>
+                <div id="alert-container"></div>
+                <form onsubmit="adminLogin(event)">
+                    <div class="form-group">
+                        <label for="admin-email">Email</label>
+                        <input type="email" id="admin-email" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="admin-password">Password</label>
+                        <input type="password" id="admin-password" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Login</button>
+                </form>
+            </section>
+
+            <!-- Dashboard Section -->
+            <section id="dashboard-section" class="hidden">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Dashboard</h2>
+                    </div>
+                    <div id="alert-container"></div>
+                    <div class="grid grid-4">
+                        <div class="card">
+                            <h3>Today's Bookings</h3>
+                            <p class="text-center" style="font-size: 2rem; font-weight: bold; color: #667eea;" id="today-bookings">0</p>
+                        </div>
+                        <div class="card">
+                            <h3>Pending Bookings</h3>
+                            <p class="text-center" style="font-size: 2rem; font-weight: bold; color: #f2994a;" id="pending-bookings">0</p>
+                        </div>
+                        <div class="card">
+                            <h3>Total Revenue</h3>
+                            <p class="text-center" style="font-size: 2rem; font-weight: bold; color: #11998e;" id="total-revenue">₹0</p>
+                        </div>
+                        <div class="card">
+                            <h3>Today's Revenue</h3>
+                            <p class="text-center" style="font-size: 2rem; font-weight: bold; color: #38ef7d;" id="today-revenue">₹0</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- All Bookings Section -->
+            <section id="bookings-section" class="hidden">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">All Bookings</h2>
+                        <div style="display: flex; gap: 1rem; align-items: center;">
+                            <input type="date" id="filter-date" class="form-control" style="width: auto;" onchange="loadBookings()">
+                            <button onclick="clearDateFilter()" class="btn btn-secondary btn-sm">Clear Filter</button>
+                        </div>
+                    </div>
+                    <div id="alert-container"></div>
+                    <div id="bookings-container">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Upcoming Bookings Section -->
+            <section id="upcoming-section" class="hidden">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Today & Tomorrow Bookings</h2>
+                    </div>
+                    <div id="alert-container"></div>
+                    <div id="upcoming-container">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Users Section -->
+            <section id="users-section" class="hidden">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Users</h2>
+                    </div>
+                    <div id="alert-container"></div>
+                    <div id="users-container">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Edit Booking Modal -->
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeEditModal()">&times;</span>
+            <h2>Edit Booking</h2>
+            <div id="edit-content"></div>
+        </div>
+    </div>
+
+    <!-- Payment QR Modal -->
+    <div id="payment-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closePaymentModal()">&times;</span>
+            <h2>Payment QR Code</h2>
+            <div id="payment-content"></div>
+        </div>
+    </div>
+
+    <script src="js/admin.js"></script>
+</body>
+</html>

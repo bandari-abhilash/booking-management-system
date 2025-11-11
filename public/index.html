@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cricket Turf Booking - Book Your Slot</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="logo">🏏 Cricket Turf Booking</div>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="#" onclick="showSection('booking')">Book Slot</a></li>
+                    <li><a href="#" onclick="showSection('my-bookings')">My Bookings</a></li>
+                    <li><a href="#" onclick="showSection('login')">Login</a></li>
+                    <li><a href="/admin">Admin Panel</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <!-- Login Section -->
+            <section id="login-section" class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Login / Register</h2>
+                </div>
+                <div id="alert-container"></div>
+                
+                <!-- Login Form -->
+                <div id="login-form">
+                    <h3>Login</h3>
+                    <form onsubmit="login(event)">
+                        <div class="form-group">
+                            <label for="login-email">Email</label>
+                            <input type="email" id="login-email" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="login-password">Password</label>
+                            <input type="password" id="login-password" class="form-control" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Login</button>
+                        <p class="mt-1">Don't have an account? <a href="#" onclick="toggleForm()">Register here</a></p>
+                    </form>
+                </div>
+
+                <!-- Register Form -->
+                <div id="register-form" class="hidden">
+                    <h3>Register</h3>
+                    <form onsubmit="register(event)">
+                        <div class="form-group">
+                            <label for="register-name">Full Name</label>
+                            <input type="text" id="register-name" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="register-email">Email</label>
+                            <input type="email" id="register-email" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="register-phone">Phone Number</label>
+                            <input type="tel" id="register-phone" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="register-password">Password</label>
+                            <input type="password" id="register-password" class="form-control" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Register</button>
+                        <p class="mt-1">Already have an account? <a href="#" onclick="toggleForm()">Login here</a></p>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Booking Section -->
+            <section id="booking-section" class="hidden">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Book Your Slot</h2>
+                    </div>
+                    <div id="alert-container"></div>
+                    
+                    <div class="form-group">
+                        <label for="booking-date">Select Date</label>
+                        <input type="date" id="booking-date" class="form-control" onchange="loadAvailableSlots()">
+                    </div>
+                    
+                    <div id="slots-container">
+                        <div class="spinner"></div>
+                    </div>
+                    
+                    <div id="booking-summary" class="hidden mt-2">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Booking Summary</h3>
+                            </div>
+                            <div id="summary-content"></div>
+                            <button onclick="confirmBooking()" class="btn btn-primary mt-1">Confirm Booking</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- My Bookings Section -->
+            <section id="my-bookings-section" class="hidden">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">My Bookings</h2>
+                    </div>
+                    <div id="alert-container"></div>
+                    <div id="bookings-container">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Payment Modal -->
+    <div id="payment-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closePaymentModal()">&times;</span>
+            <h2>Payment</h2>
+            <div id="payment-content"></div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
