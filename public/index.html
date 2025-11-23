@@ -5,8 +5,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cricket Turf Booking - Book Your Slot</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+    <!-- Hero Section with Background Image -->
+    <section class="hero">
+        <div class="hero-background">
+            <img src="entrance_view.jpg" alt="Cricket Turf Entrance" class="hero-bg-img">
+        </div>
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1 class="hero-title" data-text="Welcome to Cricket Turf Booking">Welcome to Cricket Turf Booking</h1>
+                <p class="hero-subtitle">Book your perfect cricket slot with ease</p>
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <span class="stat-number">8+</span>
+                        <span class="stat-label">Premium Turfs</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">24/7</span>
+                        <span class="stat-label">Availability</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">500+</span>
+                        <span class="stat-label">Happy Players</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Navigation -->
     <header class="header">
         <div class="container">
             <div class="logo">🏏 Cricket Turf Booking</div>
@@ -24,7 +56,7 @@
     <main class="main-content">
         <div class="container">
             <!-- Login Section -->
-            <section id="login-section" class="card">
+            <section id="login-section" class="card modern-card">
                 <div class="card-header">
                     <h2 class="card-title">Login / Register</h2>
                 </div>
@@ -75,7 +107,22 @@
 
             <!-- Booking Section -->
             <section id="booking-section" class="hidden">
-                <div class="card">
+                <!-- Turf Gallery -->
+                <div class="turf-gallery">
+                    <h2 class="section-title">Our Premium Cricket Turf</h2>
+                    <div class="gallery-container">
+                        <div class="gallery-item">
+                            <img src="ground_view.jpg" alt="Cricket Ground View">
+                            <div class="gallery-caption">Premium Ground View</div>
+                        </div>
+                        <div class="gallery-item">
+                            <img src="entrance_view.jpg" alt="Cricket Turf Entrance">
+                            <div class="gallery-caption">Modern Turf Entrance</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card modern-card">
                     <div class="card-header">
                         <h2 class="card-title">Book Your Slot</h2>
                     </div>
@@ -83,28 +130,70 @@
                     
                     <div class="form-group">
                         <label for="booking-date">Select Date</label>
-                        <input type="date" id="booking-date" class="form-control" onchange="loadAvailableSlots()">
+                        <input type="date" id="booking-date" class="form-control" onchange="onDateChange()">
                     </div>
                     
-                    <div id="slots-container">
-                        <div class="spinner"></div>
-                    </div>
-                    
-                    <div id="booking-summary" class="hidden mt-2">
-                        <div class="card">
-                            <div class="card-header">
-                                <h3>Booking Summary</h3>
-                            </div>
-                            <div id="summary-content"></div>
-                            <button onclick="confirmBooking()" class="btn btn-primary mt-1">Confirm Booking</button>
+                    <div class="time-selection-container">
+                        <div class="form-group">
+                            <label for="start-time">Start Time</label>
+                            <select id="start-time" class="form-control" onchange="onTimeChange()">
+                                <!-- Time options will be populated by JavaScript -->
+                            </select>
                         </div>
+                        
+                        <div class="form-group">
+                            <label for="end-time">End Time</label>
+                            <select id="end-time" class="form-control" onchange="onTimeChange()">
+                                <!-- Time options will be populated by JavaScript -->
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pricing Information -->
+                <div id="pricing-info" class="pricing-info hidden">
+                    <div class="card modern-card">
+                        <div class="card-header">
+                            <h3>Pricing Details</h3>
+                        </div>
+                        <div id="pricing-content"></div>
+                    </div>
+                </div>
+
+                <!-- Collision Warning -->
+                <div id="collision-warning" class="collision-warning hidden">
+                    <div class="card modern-card collision-card">
+                        <div class="card-header">
+                            <h3>⚠️ Time Slot Conflict</h3>
+                        </div>
+                        <div id="collision-content"></div>
+                        <div class="bid-options">
+                            <div class="form-group">
+                                <label for="bid-amount">Place a higher bid to secure this slot (₹)</label>
+                                <input type="number" id="bid-amount" class="form-control" placeholder="Enter bid amount">
+                            </div>
+                            <div class="bid-buttons">
+                                <button onclick="proceedWithBid()" class="btn btn-warning">Place Bid</button>
+                                <button onclick="proceedWithoutBid()" class="btn btn-secondary">Book Anyway</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="booking-summary" class="hidden mt-2">
+                    <div class="card modern-card">
+                        <div class="card-header">
+                            <h3>Booking Summary</h3>
+                        </div>
+                        <div id="summary-content"></div>
+                        <button onclick="confirmBooking()" class="btn btn-primary mt-1">Confirm Booking</button>
                     </div>
                 </div>
             </section>
 
             <!-- My Bookings Section -->
             <section id="my-bookings-section" class="hidden">
-                <div class="card">
+                <div class="card modern-card">
                     <div class="card-header">
                         <h2 class="card-title">My Bookings</h2>
                     </div>
@@ -116,6 +205,59 @@
             </section>
         </div>
     </main>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="container">
+            <h2 class="section-title">Why Choose Our Cricket Turf?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🌟</div>
+                    <h3>Premium Quality</h3>
+                    <p>Professional turf with international standards</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💡</div>
+                    <h3>Floodlit Ground</h3>
+                    <p>Play day and night with proper lighting</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📅</div>
+                    <h3>Easy Booking</h3>
+                    <p>Simple online booking system</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🏆</div>
+                    <h3>Competitive Pricing</h3>
+                    <p>Best rates in the city</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Cricket Turf Booking</h3>
+                    <p>Your premier destination for cricket turf booking</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Contact Us</h3>
+                    <p>📧 info@cricketbooking.com</p>
+                    <p>📞 +91 98765 43210</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Hours</h3>
+                    <p>Monday - Sunday: 6:00 AM - 10:00 PM</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Cricket Turf Booking. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
 
     <!-- Payment Modal -->
     <div id="payment-modal" class="modal">

@@ -5,8 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel - Cricket Turf Booking</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+    <!-- Hero Section -->
+    <section class="admin-hero">
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1 class="hero-title">Admin Dashboard</h1>
+                <p class="hero-subtitle">Manage your cricket turf booking system</p>
+            </div>
+            <div class="hero-image">
+                <img src="ground_view.jpg" alt="Admin Dashboard" class="hero-img">
+            </div>
+        </div>
+    </section>
+
+    <!-- Navigation -->
     <header class="header">
         <div class="container">
             <div class="logo">🏏 Admin Panel</div>
@@ -15,6 +32,11 @@
                     <li><a href="#" onclick="showSection('dashboard')">Dashboard</a></li>
                     <li><a href="#" onclick="showSection('bookings')">All Bookings</a></li>
                     <li><a href="#" onclick="showSection('upcoming')">Today & Tomorrow</a></li>
+                    <li><a href="#" onclick="showSection('bids')">Bids & Collisions</a></li>
+                    <li><a href="#" onclick="showSection('pricing')">Pricing</a></li>
+                    <li><a href="#" onclick="showSection('operating-hours')">Operating Hours</a></li>
+                    <li><a href="#" onclick="showSection('notifications')">Notifications</a></li>
+                    <li><a href="#" onclick="showSection('payment-notifications')">Payment Confirmations</a></li>
                     <li><a href="#" onclick="showSection('users')">Users</a></li>
                     <li><a href="#" onclick="logout()">Logout</a></li>
                     <li><a href="/">Main Site</a></li>
@@ -26,7 +48,7 @@
     <main class="main-content">
         <div class="container">
             <!-- Login Section -->
-            <section id="login-section" class="card">
+            <section id="login-section" class="card modern-card">
                 <div class="card-header">
                     <h2 class="card-title">Admin Login</h2>
                 </div>
@@ -46,27 +68,55 @@
 
             <!-- Dashboard Section -->
             <section id="dashboard-section" class="hidden">
-                <div class="card">
+                <div class="card modern-card">
                     <div class="card-header">
-                        <h2 class="card-title">Dashboard</h2>
+                        <h2 class="card-title">Dashboard Overview</h2>
                     </div>
                     <div id="alert-container"></div>
-                    <div class="grid grid-4">
-                        <div class="card">
-                            <h3>Today's Bookings</h3>
-                            <p class="text-center" style="font-size: 2rem; font-weight: bold; color: #667eea;" id="today-bookings">0</p>
+                    <div class="dashboard-grid">
+                        <div class="stat-card primary">
+                            <div class="stat-icon">📅</div>
+                            <div class="stat-content">
+                                <h3>Today's Bookings</h3>
+                                <p class="stat-number" id="today-bookings">0</p>
+                            </div>
                         </div>
-                        <div class="card">
-                            <h3>Pending Bookings</h3>
-                            <p class="text-center" style="font-size: 2rem; font-weight: bold; color: #f2994a;" id="pending-bookings">0</p>
+                        <div class="stat-card warning">
+                            <div class="stat-icon">⏳</div>
+                            <div class="stat-content">
+                                <h3>Pending Bookings</h3>
+                                <p class="stat-number" id="pending-bookings">0</p>
+                            </div>
                         </div>
-                        <div class="card">
-                            <h3>Total Revenue</h3>
-                            <p class="text-center" style="font-size: 2rem; font-weight: bold; color: #11998e;" id="total-revenue">₹0</p>
+                        <div class="stat-card info">
+                            <div class="stat-icon">💰</div>
+                            <div class="stat-content">
+                                <h3>Pending Bids</h3>
+                                <p class="stat-number" id="pending-bids">0</p>
+                            </div>
                         </div>
-                        <div class="card">
-                            <h3>Today's Revenue</h3>
-                            <p class="text-center" style="font-size: 2rem; font-weight: bold; color: #38ef7d;" id="today-revenue">₹0</p>
+                        <div class="stat-card danger">
+                            <div class="stat-icon">⚠️</div>
+                            <div class="stat-content">
+                                <h3>Unresolved Collisions</h3>
+                                <p class="stat-number" id="unresolved-collisions">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dashboard-grid">
+                        <div class="stat-card success">
+                            <div class="stat-icon">💵</div>
+                            <div class="stat-content">
+                                <h3>Total Revenue</h3>
+                                <p class="stat-number" id="total-revenue">₹0</p>
+                            </div>
+                        </div>
+                        <div class="stat-card secondary">
+                            <div class="stat-icon">📈</div>
+                            <div class="stat-content">
+                                <h3>Today's Revenue</h3>
+                                <p class="stat-number" id="today-revenue">₹0</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -74,11 +124,11 @@
 
             <!-- All Bookings Section -->
             <section id="bookings-section" class="hidden">
-                <div class="card">
+                <div class="card modern-card">
                     <div class="card-header">
                         <h2 class="card-title">All Bookings</h2>
-                        <div style="display: flex; gap: 1rem; align-items: center;">
-                            <input type="date" id="filter-date" class="form-control" style="width: auto;" onchange="loadBookings()">
+                        <div class="filter-controls">
+                            <input type="date" id="filter-date" class="form-control" onchange="loadBookings()">
                             <button onclick="clearDateFilter()" class="btn btn-secondary btn-sm">Clear Filter</button>
                         </div>
                     </div>
@@ -91,7 +141,7 @@
 
             <!-- Upcoming Bookings Section -->
             <section id="upcoming-section" class="hidden">
-                <div class="card">
+                <div class="card modern-card">
                     <div class="card-header">
                         <h2 class="card-title">Today & Tomorrow Bookings</h2>
                     </div>
@@ -102,11 +152,78 @@
                 </div>
             </section>
 
+            <!-- Bids & Collisions Section -->
+            <section id="bids-section" class="hidden">
+                <div class="card modern-card">
+                    <div class="card-header">
+                        <h2 class="card-title">Bids & Collisions Management</h2>
+                    </div>
+                    <div id="alert-container"></div>
+                    <div id="bids-container">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Pricing Section -->
+            <section id="pricing-section" class="hidden">
+                <div class="card modern-card">
+                    <div class="card-header">
+                        <h2 class="card-title">Time Slot Pricing Management</h2>
+                    </div>
+                    <div id="alert-container"></div>
+                    <div id="pricing-container">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Notifications Section -->
+            <section id="notifications-section" class="hidden">
+                <div class="card modern-card">
+                    <div class="card-header">
+                        <h2 class="card-title">Admin Notifications</h2>
+                        <button onclick="markAllNotificationsRead()" class="btn btn-secondary btn-sm">Mark All Read</button>
+                    </div>
+                    <div id="alert-container"></div>
+                    <div id="notifications-container">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Payment Notifications Section -->
+            <section id="payment-notifications-section" class="hidden">
+                <div class="card modern-card">
+                    <div class="card-header">
+                        <h2 class="card-title">Payment Confirmations</h2>
+                        <button onclick="markAllPaymentNotificationsRead()" class="btn btn-secondary btn-sm">Mark All Read</button>
+                    </div>
+                    <div id="alert-container"></div>
+                    <div id="payment-notifications-container">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Operating Hours Section -->
+            <section id="operating-hours-section" class="hidden">
+                <div class="card modern-card">
+                    <div class="card-header">
+                        <h2 class="card-title">Operating Hours Management</h2>
+                    </div>
+                    <div id="alert-container"></div>
+                    <div id="operating-hours-container">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </section>
+
             <!-- Users Section -->
             <section id="users-section" class="hidden">
-                <div class="card">
+                <div class="card modern-card">
                     <div class="card-header">
-                        <h2 class="card-title">Users</h2>
+                        <h2 class="card-title">Users Management</h2>
                     </div>
                     <div id="alert-container"></div>
                     <div id="users-container">
@@ -132,6 +249,15 @@
             <span class="close" onclick="closePaymentModal()">&times;</span>
             <h2>Payment QR Code</h2>
             <div id="payment-content"></div>
+        </div>
+    </div>
+
+    <!-- Collision Resolution Modal -->
+    <div id="collision-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeCollisionModal()">&times;</span>
+            <h2>Resolve Collision</h2>
+            <div id="collision-content"></div>
         </div>
     </div>
 

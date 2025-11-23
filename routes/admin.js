@@ -3,28 +3,46 @@ const moment = require('moment');
 const QRCode = require('qrcode');
 const db = require('../config/database');
 const { authenticateToken, authenticateAdmin } = require('../middleware/auth');
+const adminController = require('../controllers/adminController');
 const router = express.Router();
 
 // Apply admin authentication to all routes
 router.use(authenticateToken, authenticateAdmin);
 
-// Get all bookings
-router.get('/bookings', async (req, res) => {
+// Notification management
+router.get('/notifications', adminController.getNotifications);
+router.put('/notifications/:notification_id/read', adminController.markNotificationRead);
+
+// Payment notification management
+router.get('/payment-notifications', adminController.getPaymentNotifications);
+router.put('/payment-notifications/:id/read', adminController.markPaymentNotificationRead);
+router.post('/payment-confirmation', adminController.handlePaymentConfirmation);
+
+// Booking management with collision and bid support
+router.get('/bookings', adminController.getAllBookings);
+router.post('/bookings/handle-bid', adminController.handleBid);
+router.post('/bookings/resolve-collision', adminController.resolveCollision);
+
+// Pricing management
+router.get('/pricing', adminController.getAllPricing);
+router.put('/pricing', adminController.updatePricing);
+
+// Legacy routes for backward compatibility
+router.get('/bookings/legacy', async (req, res) => {
   try {
     const { date } = req.query;
     let query = `
-      SELECT b.*, ts.slot_name, ts.start_time, ts.end_time, u.name as user_name, u.email, u.phone
+      SELECT b.*, u.name as user_name, u.email, u.phone
       FROM bookings b
-      JOIN turf_slots ts ON b.slot_id = ts.id
       JOIN users u ON b.user_id = u.id
     `;
     
     let params = [];
     if (date) {
-      query += ' WHERE b.booking_date = $1 ORDER BY ts.start_time';
+      query += ' WHERE b.booking_date = $1 ORDER BY b.start_time';
       params.push(date);
     } else {
-      query += ' ORDER BY b.booking_date DESC, ts.start_time';
+      query += ' ORDER BY b.booking_date DESC, b.start_time';
     }
     
     const result = await db.query(query, params);
@@ -42,12 +60,11 @@ router.get('/bookings/upcoming', async (req, res) => {
     const tomorrow = moment().add(1, 'day').format('YYYY-MM-DD');
     
     const result = await db.query(`
-      SELECT b.*, ts.slot_name, ts.start_time, ts.end_time, u.name as user_name, u.email, u.phone
+      SELECT b.*, u.name as user_name, u.email, u.phone
       FROM bookings b
-      JOIN turf_slots ts ON b.slot_id = ts.id
       JOIN users u ON b.user_id = u.id
       WHERE b.booking_date IN ($1, $2)
-      ORDER BY b.booking_date, ts.start_time
+      ORDER BY b.booking_date, b.start_time
     `, [today, tomorrow]);
     
     res.json(result.rows);
@@ -87,29 +104,52 @@ router.put('/bookings/:id/status', async (req, res) => {
 router.put('/bookings/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { slot_id, booking_date } = req.body;
+    const { booking_date, start_time, end_time } = req.body;
     
-    // Check if new slot is available
-    const existingBooking = await db.query(
-      'SELECT id FROM bookings WHERE slot_id = $1 AND booking_date = $2 AND id != $3 AND status IN ($4, $5)',
-      [slot_id, booking_date, id, 'pending', 'confirmed']
-    );
+    // Check for collisions with existing bookings
+    const existingBooking = await db.query(`
+      SELECT id FROM bookings 
+      WHERE booking_date = $1 
+      AND (
+        (start_time <= $2 AND end_time > $2) OR
+        (start_time < $3 AND end_time >= $3) OR
+        (start_time >= $2 AND end_time <= $3)
+      )
+      AND id != $4 
+      AND status IN ($5, $6)
+    `, [booking_date, start_time, end_time, id, 'pending', 'confirmed']);
     
     if (existingBooking.rows.length > 0) {
-      return res.status(400).json({ error: 'Slot already booked' });
+      return res.status(400).json({ error: 'Time slot already booked' });
     }
     
-    // Get new slot price
-    const slotResult = await db.query(
-      'SELECT price FROM turf_slots WHERE id = $1',
-      [slot_id]
-    );
+    // Calculate new price
+    const priceResult = await db.query(`
+      SELECT COALESCE(SUM(
+        CASE 
+          WHEN tp.start_time <= $1 AND tp.end_time > $1 THEN 
+            LEAST(EXTRACT(EPOCH FROM (LEAST(tp.end_time, $3) - GREATEST(tp.start_time, $1))) / 3600, 
+                 EXTRACT(EPOCH FROM (tp.end_time - tp.start_time)) / 3600) * tp.base_price
+          WHEN tp.start_time < $2 AND tp.end_time >= $2 THEN 
+            LEAST(EXTRACT(EPOCH FROM (LEAST(tp.end_time, $3) - GREATEST(tp.start_time, $1))) / 3600, 
+                 EXTRACT(EPOCH FROM (tp.end_time - tp.start_time)) / 3600) * tp.base_price
+          ELSE 0
+        END
+      ), 0) as total_price
+      FROM time_slot_pricing tp
+      WHERE tp.is_active = true
+      AND (
+        (tp.start_time <= $1 AND tp.end_time > $1) OR
+        (tp.start_time < $2 AND tp.end_time >= $2) OR
+        (tp.start_time >= $1 AND tp.end_time <= $2)
+      )
+    `, [start_time, end_time, end_time]);
     
-    const total_amount = slotResult.rows[0].price;
+    const total_amount = parseFloat(priceResult.rows[0].total_price);
     
     const result = await db.query(
-      'UPDATE bookings SET slot_id = $1, booking_date = $2, total_amount = $3, updated_at = CURRENT_TIMESTAMP WHERE id = $4 RETURNING *',
-      [slot_id, booking_date, total_amount, id]
+      'UPDATE bookings SET booking_date = $1, start_time = $2, end_time = $3, total_amount = $4, updated_at = CURRENT_TIMESTAMP WHERE id = $5 RETURNING *',
+      [booking_date, start_time, end_time, total_amount, id]
     );
     
     if (result.rows.length === 0) {
@@ -206,6 +246,18 @@ router.get('/dashboard', async (req, res) => {
       ['pending']
     );
     
+    // Pending bids
+    const pendingBids = await db.query(
+      'SELECT COUNT(*) as count FROM bookings WHERE is_bid = true AND bid_status = $1',
+      ['pending']
+    );
+    
+    // Unresolved collisions
+    const unresolvedCollisions = await db.query(
+      'SELECT COUNT(*) as count FROM booking_collisions WHERE collision_status = $1',
+      ['pending']
+    );
+    
     // Total revenue
     const totalRevenue = await db.query(
       'SELECT SUM(total_amount) as revenue FROM bookings WHERE status = $1',
@@ -218,16 +270,36 @@ router.get('/dashboard', async (req, res) => {
       [today, 'confirmed']
     );
     
+    // Unread notifications
+    const unreadNotifications = await db.query(
+      'SELECT COUNT(*) as count FROM admin_notifications WHERE is_read = false',
+      []
+    );
+    
+    // Unread payment notifications
+    const unreadPaymentNotifications = await db.query(
+      'SELECT COUNT(*) as count FROM payment_notifications WHERE is_read = false',
+      []
+    );
+    
     res.json({
       todayBookings: todayBookings.rows[0].count,
       pendingBookings: pendingBookings.rows[0].count,
+      pendingBids: pendingBids.rows[0].count,
+      unresolvedCollisions: unresolvedCollisions.rows[0].count,
       totalRevenue: totalRevenue.rows[0].revenue || 0,
-      todayRevenue: todayRevenue.rows[0].revenue || 0
+      todayRevenue: todayRevenue.rows[0].revenue || 0,
+      unreadNotifications: unreadNotifications.rows[0].count,
+      unreadPaymentNotifications: unreadPaymentNotifications.rows[0].count
     });
   } catch (error) {
     console.error('Error fetching dashboard stats:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });
+
+// Operating hours management
+router.get('/operating-hours', adminController.getOperatingHours);
+router.put('/operating-hours', adminController.updateOperatingHours);
 
 module.exports = router;
